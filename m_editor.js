@@ -16,7 +16,6 @@ export class EditorController {
 
     moveScroll(y) {
         if (y !== null && this.#win.parent?.Asc?.editor) {
-            console.log("📍 Перемещаемся к сохраненной позиции y:", y);
             // Получаем текущий X, чтобы не сбить горизонтальный скролл
             let currentScroll = this.#win.parent.Asc.editor.getCurScroll();
             let currentX = currentScroll ? currentScroll.x : 0;
