@@ -17,12 +17,10 @@ export class PluginStorage {
         this.#prefix = "oautoscroll_plugin_";
         this.#idMoveByOpenFlag = this.#prefix + "move_by_open";
         this.#idSaveByCloseFlag = this.#prefix + "save_by_close";
-
-        console.log("PluginStorage initialized with document ID:", thisgetIdDoc());
     }
 
     getIdDoc() {
-        return this.#win.Asc?.plugin?.info?.documentTitle || "default_doc";
+        return this.#prefix + (this.#win.Asc?.plugin?.info?.documentTitle || "default_doc");
     }
 
     saveScroll(y) {
