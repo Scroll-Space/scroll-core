@@ -23,6 +23,10 @@ export class PluginStorage {
         return this.#prefix + (this.#win.Asc?.plugin?.info?.documentTitle || "default_doc");
     }
 
+    getTempIdDoc() {
+        return this.#prefix + "temp_" + (this.#win.Asc?.plugin?.info?.documentTitle || "default_doc");
+    }
+
     saveScroll(y) {
         if (y === null) return;
 
@@ -33,8 +37,26 @@ export class PluginStorage {
         }
     }
 
+    saveTempScroll(y) {
+        if (y === null) return;
+
+        try {
+            localStorage.setItem(this.getTempIdDoc(), y.toString());
+        } catch (e) {
+            console.error("PluginStorage [saveTempScroll]: ", e);
+        }
+    }
+
     getScroll() {
         const rawData = localStorage.getItem(this.getIdDoc());
+        if (!rawData) return null;
+
+        const parsedY = parseFloat(rawData);
+        return isNaN(parsedY) ? null : parsedY;
+    }
+
+    getTempScroll() {
+        const rawData = localStorage.getItem(this.getTempIdDoc());
         if (!rawData) return null;
 
         const parsedY = parseFloat(rawData);
