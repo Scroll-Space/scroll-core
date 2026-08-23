@@ -1,7 +1,7 @@
 export class EditorController {
     /** @type {Window} */
     #win;
-    
+
     /**
      * @param {Window} win
      */
@@ -9,19 +9,45 @@ export class EditorController {
         this.#win = win;
     }
 
-    getScrollY() {
-        let scrollInfo = this.#win.parent?.Asc?.editor?.getCurScroll();
-        return scrollInfo ? scrollInfo.y : null;
-    }
+    /**
+     * @typedef { Object } ViewState
+     * @property { number } x - Координата X скролла
+     * @property { number } y - Координата Y скролла
+     * @property { number } zoom - Значение масштаба(в процентах, например 130)
+     */
 
-    moveScroll(y) {
-        if (y !== null && this.#win.parent?.Asc?.editor) {
-            // Получаем текущий X, чтобы не сбить горизонтальный скролл
-            let currentScroll = this.#win.parent.Asc.editor.getCurScroll();
-            let currentX = currentScroll ? currentScroll.x : 0;
+    /**
+     * @returns {ViewState | null} Объект состояния или null, если данных нет
+     */
+    getView() {
+        try {
+            const scrollInfo = this.#win?.parent?.Asc?.editor?.getCurScroll();
+            const zoomText = this.#win?.parent?.document?.querySelector('#label-zoom')?.textContent;
 
-            this.#win.parent.Asc.editor.scrollToXY(currentX, y);
+            const res = {
+                x: scrollInfo?.x ?? null,
+                y: scrollInfo?.y ?? null,
+                zoom: zoomText ? Number(zoomText.split(' ').at(-1).slice(0, -1)) : null
+            };
+
+            // Если хоты бы одно из значений null, undefined или NaN — возвращаем null
+            const hasInvalidValue = Object.values(res).some(
+                val => val === null || val === undefined || Number.isNaN(val)
+            );
+
+            return hasInvalidValue ? null : res;
+        } catch (e) {
+            return null;
         }
     }
-   
+
+    /**
+     * @param {ViewState | null} view - Объект состояния или null
+     */
+    setView(view) {
+        if (view) {
+            this.#win?.parent?.Asc?.editor.zoom(view.zoom);
+            this.#win?.parent?.Asc?.editor.scrollToXY(view.x, view.y);
+        }
+    }
 }

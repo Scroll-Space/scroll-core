@@ -27,48 +27,63 @@ export class PluginStorage {
         return this.#prefix + "temp_" + (this.#win.Asc?.plugin?.info?.documentTitle || "default_doc");
     }
 
-    saveScroll(y) {
-        if (y === null) return;
+    /**
+     * @typedef { Object } ViewState
+     * @property { number } x - Координата X скролла
+     * @property { number } y - Координата Y скролла
+     * @property { number } zoom - Значение масштаба(в процентах, например 130)
+     */
+
+    /**
+     * Сохраняет состояние отображения в localStorage
+     * @param {ViewState | null} view - Объект состояния или null
+     * @param {boolean} [isTemp=false] - Флаг временного сохранения
+     */
+    saveView(view, isTemp = false) {
+        if (!view) return;
+
+        let storageKey = isTemp ? this.getTempIdDoc() : this.getIdDoc();
 
         try {
-            localStorage.setItem(this.getIdDoc(), y.toString());
+            localStorage.setItem(storageKey, JSON.stringify(view));
         } catch (e) {
-            console.error("PluginStorage [saveScroll]: ", e);
+            console.error("PluginStorage [saveView]: ", e);
         }
     }
 
-    saveTempScroll(y) {
-        if (y === null) return;
+    /**
+     * Получает сохраненное состояние отображения из localStorage
+     * 
+     * @param {boolean} [isTemp=false] - Флаг чтения из временного хранилища
+     * @returns {ViewState | null} Объект состояния или null, если данных нет
+     */
+    getView(isTemp = false) {
+        let storageKey = isTemp ? this.getTempIdDoc() : this.getIdDoc();
+        const rawData = localStorage.getItem(storageKey);
+        if (!rawData) return null;
 
         try {
-            localStorage.setItem(this.getTempIdDoc(), y.toString());
+            const parsedData = JSON.parse(rawData);
+            if (typeof parsedData === 'object' && parsedData !== null) {
+                return parsedData;
+            }
         } catch (e) {
-            console.error("PluginStorage [saveTempScroll]: ", e);
+            console.error("PluginStorage [getView]: ", e);
         }
+
+        return null;
     }
 
-    getScroll() {
-        const rawData = localStorage.getItem(this.getIdDoc());
-        if (!rawData) return null;
-
-        const parsedY = parseFloat(rawData);
-        return isNaN(parsedY) ? null : parsedY;
-    }
-
-    getTempScroll() {
-        const rawData = localStorage.getItem(this.getTempIdDoc());
-        if (!rawData) return null;
-
-        const parsedY = parseFloat(rawData);
-        return isNaN(parsedY) ? null : parsedY;
+    /**
+     * @param {boolean} [isTemp=false] - Флаг чтения из временного хранилища
+     */
+    removeView(isTemp = false) {
+        let storageKey = isTemp ? this.getTempIdDoc() : this.getIdDoc();
+        localStorage.removeItem(storageKey);
     }
 
     isFirstOpen() {
         return localStorage.getItem(this.getIdDoc()) === null;
-    }
-
-    removeScroll() {
-        localStorage.removeItem(this.getIdDoc());
     }
 
     // --- Настройки (Чекбоксы) ---
